@@ -1,7 +1,7 @@
-from graph_builder import *
+from .graph_builder import *
 import logging
 '''
-static module for graph manipulations and
+static module for graph manipulations andq
 '''
 def anding_two_graphs(graph_start, graph_end):
     '''anding two graphs '''
@@ -57,3 +57,6 @@ def accepting_func_char(next_node, accept_char):
 def accpeting_func_elipson(next_node):
     def accepting_output(testing_char, master_key=False):
         return next_node
+
+if(__name__ == "main"):
+    anding_two_graphs(graph(node()), graph(node()))
