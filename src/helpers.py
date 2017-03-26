@@ -1,4 +1,5 @@
 import logging
+from .graph_builder import *
 logging.basicConfig(level=logging.INFO)
 def replace_all(str_in,rep_dict):
     temp = str_in
@@ -8,6 +9,28 @@ def replace_all(str_in,rep_dict):
         temp = temp.replace(i[0], i[1])
     logging.info('finished replaceing string')
     return temp
+
+def change_to_graphs(inp1,inp2):
+    '''
+    if inputs are char make a simple NFA from them and pass them for
+    the operation handling functions as tuples,
+    can\'t pass by reference as maybe a char which is imutable
+    '''
+    if type(inp1) is graph:
+        graph1 = inp1
+    else:
+        start_node = node()
+        start_node.add_next_node(accepting_func_char(node(), inp1))
+        graph1 = graph(start_node)
+
+    if type(inp2) is graph:
+        graph2 = inp2
+    else:
+        start_node = node()
+        start_node.add_next_node(accepting_func_char(node, inp2))
+        graph2 = inp2
+    
+    return (graph1, graph2)
 
 def accepting_func_range(next_node, range_start, range_end):
     '''
