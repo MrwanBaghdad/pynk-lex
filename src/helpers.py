@@ -10,7 +10,7 @@ def replace_all(str_in,rep_dict):
     logging.info('finished replaceing string')
     return temp
 
-def change_to_graphs(inp1,inp2):
+def change_to_graphs(inp1,inp2=None):
     '''
     if inputs are char make a simple NFA from them and pass them for
     the operation handling functions as tuples,
@@ -22,6 +22,9 @@ def change_to_graphs(inp1,inp2):
         start_node = node()
         start_node.add_next_node(accepting_func_char(node(), inp1))
         graph1 = graph(start_node)
+
+    if inp2 is None:
+        return graph1
 
     if type(inp2) is graph:
         graph2 = inp2
@@ -74,6 +77,7 @@ def accpeting_func_elipson(next_node):
     return accepting_output
 
 def to_postfix(str_in):
+    ''' convert infix to postfix string '''
     logging.info('start conversion to postfix')
     postfix_stack = []
     op_stack = []
@@ -107,7 +111,7 @@ def to_postfix(str_in):
                 temp = op_stack.pop()
         else:
             postfix_stack.append(char)
-        
+
     while op_stack.__len__() > 0:
         postfix_stack.append(op_stack.pop())
     return ''.join(postfix_stack)
