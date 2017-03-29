@@ -1,4 +1,4 @@
-import context
+from .context import src
 import src.graph_mani as graph_mani
 import src.graph_builder as graph_builder
 import src.helpers as helpers
@@ -54,4 +54,3 @@ class testing_opaa(unittest.TestCase):
         unittest.TestCase.assertNotIn(self, n12, withA)
 
 
-unittest.main()

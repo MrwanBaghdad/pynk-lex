@@ -1,0 +1,5 @@
+language: python
+python:
+3.5
+
+scripts: python -m unittest --discovery
