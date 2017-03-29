@@ -14,7 +14,7 @@ def oring_two_graphs(graph1, graph2):
     '''
     perfoming an OR operation on two graphs
     '''
-    (graph1,graph2) = change_to_graphs(graph1, graph2)
+    (graph1, graph2) = change_to_graphs(graph1, graph2)
     common_start = node()
     common_start.add_next_node(accpeting_func_elipson(graph1.start_node))
     common_start.add_next_node(accpeting_func_elipson(graph2.start_node))
@@ -23,9 +23,9 @@ def oring_two_graphs(graph1, graph2):
     graph2.end_node.add_next_node(accpeting_func_elipson(common_end))
     return graph(common_start)
 
-def positive_knlee(graph):
+def positive_knlee(graph_input):
     '''preformaing a posisitve knlee cloure on given graph'''
-    graph_in = change_to_graphs(graph)
+    graph_in = change_to_graphs(graph_input)
     new_start = node()
     new_end = node()
     new_start.add_next_node(accpeting_func_elipson(graph_in.start_node))
