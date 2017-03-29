@@ -88,7 +88,7 @@ def gen_elipson_table(super_node):
         for edge in standing_node.next_node:
             if edge.__code__.co_code == elipson_dict[2]:
                 if edge(master_key=True) not in starting_node_list:
-                    dfs_next_node= edge(master_key=True)
+                    dfs_next_node = edge(master_key=True)
                     starting_node_list.append(dfs_next_node)
                     return dfs_elipson_edges(starting_node_list, dfs_next_node)
             else: 
@@ -101,10 +101,11 @@ def gen_elipson_table(super_node):
 
 def gen_great_dfa(start_super_node, elipson_dict):
     '''make lexical DFAs great again'''
+    #every node check for all inputs from inputs_range
     
     # get dict of all elipson moves
     #get all nodes:
-    #TODO:
+    #DONE 
 
 
     # TODO: make postfix algo
