@@ -19,6 +19,7 @@ def change_to_graphs(inp1,inp2=None):
     the operation handling functions as tuples,
     can\'t pass by reference as maybe a char which is imutable
     '''
+    logging.info("started changinng graphs")
     if type(inp1) is graph:
         graph1 = inp1
     else:
@@ -36,6 +37,7 @@ def change_to_graphs(inp1,inp2=None):
         start_node.add_next_node(accepting_func_char(node, inp2))
         graph2 = inp2
 
+    logging.info('finished changing to graphs')
     return (graph1, graph2)
 
 def accepting_func_range(next_node, range_start, range_end):
