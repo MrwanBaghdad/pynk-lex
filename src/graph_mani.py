@@ -6,9 +6,11 @@ static module for graph manipulations andq
 '''
 def anding_two_graphs(graph_start, graph_end):
     '''anding two graphs '''
+    logging.info('started anding operation')
     (graph1, graph2) = change_to_graphs(graph_start, graph_end)
-    graph1.end_node.add_next_node(graph2.start_node)
-    return graph(graph_start.start_node)
+    graph1.end_node.add_next_node(accpeting_func_elipson(graph2.start_node))
+    logging.info('finished anding operation')
+    return graph(graph1.start_node)
 
 def oring_two_graphs(graph1, graph2):
     '''
@@ -40,6 +42,8 @@ def knlee(graph_inn):
     new_end = node()
     new_start.add_next_node(accpeting_func_elipson(graph_in.start_node))
     graph_in.end_node.add_next_node(accpeting_func_elipson(new_end))
+    graph_in.end_node.add_next_node(accpeting_func_elipson(graph_in.start_node))
+    new_start.add_next_node(accpeting_func_elipson(new_end))
     return graph(new_start)
 
     
