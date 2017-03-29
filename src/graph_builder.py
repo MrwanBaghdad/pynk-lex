@@ -1,10 +1,16 @@
+import logging
+
+logging.basicConfig(level=logging.INFO)
 class node():
     def __init__(self, final_state=False):
         '''
         create a node with a ref to other nodes and final state with false
         '''
         self.next_node = []
-        self.final_state = final_state
+        if final_state is False:
+            self.final_state = None
+        else:
+            self.final_state = final_state
 
     def add_next_node(self, accepting_func):
         '''
@@ -13,7 +19,7 @@ class node():
         '''
         self.next_node.append(accepting_func)
 
-    def get_next_node(self, testing_char, master_key=None):
+    def get_next_node(self, testing_char=None, master_key=None):
         '''
             refractor for getting next node
         '''
@@ -40,15 +46,22 @@ class graph:
         '''
         DFS to get end node
         '''
-        if self.end_node is not None:
+        logging.debug(start_node)
+        hist_stack.append(start_node)
+        self.end_node = start_node
+        if self.end_node.final_state:
             return
-        for i in self.start_node.next_node:
-            temp = i(master_key=True)
-            if temp not in hist_stack:
-                hist_stack.append(temp)
-                self.run_graph(temp, hist_stack)
-            if temp.final_state:
-                self.end_node = temp
+        # if self.end_node is not None:
+        #     return
+        for next_node in self.end_node.get_next_node(master_key=True):
+            if next_node not in hist_stack:
+                self.run_graph(next_node, hist_stack)
+                # go to next node
+            # if temp not in hist_stack:
+            #     hist_stack.append(temp)
+            #     self.run_graph(temp, hist_stack)
+            # if temp.final_state:
+            #     self.end_node = temp
 #depreceated
         # for i in start_node.next_nodes.values():
         #     if i.final_state is True:
@@ -59,9 +72,14 @@ class graph:
         #         hist_stack.append(i)
         #         self.run_graph(i, hist_stack)
 
+
+
 if __name__ == '__main__':
-    n1 = node()
+    from helpers import *
+    n1 = node(final_state=True)
     n2 = node()
+    n1.add_next_node(accepting_func_range(n2,0,10))
+    n2.add_next_node(accepting_func_char(n1,'a'))
     g1 = graph(n1)
-    print(n2, n1, n1.next_node)
+    print(g1.end_node is n1)
 
