@@ -12,20 +12,23 @@ import re
 logging.basicConfig(level=logging.DEBUG)
 def gen_great_NFA(in_lines):
     '''generate one NFA for whole lang'''
-    input_lines = preproc.transfrom(in_lines)
+    input_lines = in_lines
     logging.info('Started generating NFA')
+
     literal_flag = False
     super_node = node()
     for all_line in input_lines:
-        if re.search(r':',all_line) is not None:
+        if re.search(r'=',all_line) is not None:
             logging.debug('found definition'+re.search(r'=', all_line).expand())
             continue
-        line = all_line.split(':')[1].strip()
-        line_pstfx = to_postfix(line)
+
+        line_pstfx = line = all_line.split(':')[1].strip()
         logging.debug('working on postfix '+line_pstfx)
         stk = []
         for char in line_pstfx:
+            logging.debug('cur char in postfix '+char)
             if literal_flag is True:
+                logging.info('adding literal char in stack '+char)
                 stk.append(char)
                 literal_flag = False
             elif char in ['.', '+', '*', '|', '-']:
@@ -55,13 +58,19 @@ def gen_great_NFA(in_lines):
                     start_node = node()
                     start_node.add_next_node(accepting_func_range(node(),c1,c2))
                     stk.append(graph(start_node))
-                elif char == '\\':
-                    continue
+            elif char == "\\":
+                logging.debug("found literal"+char)
+                literal_flag = True
+                continue
+            else:
+                stk.append(char)
         '''one NFA Stack in stk push to NFA stack'''
-        if stk.__len__ ==1  and type(stk[0]) != graph:
+        if stk.__len__() !=1  or type(stk[0]) != graph:
             logging.error('regex parsed more than one nfa ')
-            return RuntimeError
-        stk[0].end_node.final_state = all_line.split('=')[0]
+            raise RuntimeError
+        logging.debug('all_line: '+all_line)
+        logging.debug(stk)
+        stk[0].end_node.final_state = all_line.split(':')[0].strip()
         super_node.add_next_node(accpeting_func_elipson(stk[0].start_node))
     
     return super_node
@@ -85,8 +94,9 @@ def gen_elipson_table(super_node):
     logging.info('finsihed getting all nodes')
     elipson_state_table = {}
     for cur_node in ALL_NODES:
-        elipson_state_table[cur_node] = list().append(cur_node)
-        dfs_elipson_edges(elipson_state_table, cur_node)
+        elipson_state_table[cur_node] = list()
+        elipson_state_table[cur_node].append(cur_node)
+        dfs_elipson_edges(elipson_state_table[cur_node], cur_node)
     return elipson_state_table
 
 def gen_great_dfa(start_super_node, elipson_dict):
@@ -110,7 +120,7 @@ def gen_great_dfa(start_super_node, elipson_dict):
     #DONE 
 
 
-    # TODO: make postfix algo
+    
     # lex_lines = helpers.to_postfix(lex_lines) 
     # nfa_stack = []
     # op_stack = []
@@ -135,6 +145,6 @@ def gen_great_dfa(start_super_node, elipson_dict):
     #             if curr_nfa is None:
     #                 n1 = nfa_stack.pop()
     #                 n2 = nfa_stack.pop()
-    #                 #FIXME: 
+    
     #                 # oring_two_graphs()
     #         elif char == '*':
