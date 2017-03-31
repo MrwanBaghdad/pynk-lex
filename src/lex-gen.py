@@ -10,16 +10,19 @@ from .preproc import preproc
 import re
 
 logging.basicConfig(level=logging.DEBUG)
-def gen_great_NFA(input_lines):
+def gen_great_NFA(in_lines):
     '''generate one NFA for whole lang'''
-    input_lines = preproc.transfrom(input_lines)
+    input_lines = preproc.transfrom(in_lines)
+    logging.info('Started generating NFA')
     literal_flag = False
-    final_NFA_stack = []
+    super_node = node()
     for all_line in input_lines:
-        if re.search(r'=',all_line) is not None:
+        if re.search(r':',all_line) is not None:
+            logging.debug('found definition'+re.search(r'=', all_line).expand())
             continue
-        line = all_line.split('=')[1].strip()
+        line = all_line.split(':')[1].strip()
         line_pstfx = to_postfix(line)
+        logging.debug('working on postfix '+line_pstfx)
         stk = []
         for char in line_pstfx:
             if literal_flag is True:
@@ -27,23 +30,26 @@ def gen_great_NFA(input_lines):
                 literal_flag = False
             elif char in ['.', '+', '*', '|', '-']:
                 if char == '.':
+                    logging.info('preforming and on two graphs')
                     c2 = stk.pop()
                     c1 = stk.pop()
                     stk.append(anding_two_graphs(c1, c2))
 
                 elif char in ['*','+']:
-                    #FIXME: make knlee and positive knlee
-                    # knlee_graph(stk.pop())
                     if(char == '*'):
+                        logging.info('preforming closure')
                         stk.append(knlee(stk.pop()))
                     elif(char == '+'):
+                        logging.info('preforming positive colsure')
                         stk.append(positive_knlee(stk.pop()))
                 elif char == '|':
+                    logging.info('preforming or')
                     c2 = stk.pop()
                     c1 = stk.pop()
                     stk.append(oring_two_graphs(c1,c2))
 
                 elif char == '-':
+                    logging.info('adding range edge')
                     c2 = stk.pop()
                     c1 = stk.pop()
                     start_node = node()
@@ -56,53 +62,49 @@ def gen_great_NFA(input_lines):
             logging.error('regex parsed more than one nfa ')
             return RuntimeError
         stk[0].end_node.final_state = all_line.split('=')[0]
-    
-    '''oring all graphs in NFA'''
-    super_node = node()
-    for nfa in final_NFA_stack:
-        super_node.add_next_node(accpeting_func_elipson(nfa.start_node))
+        super_node.add_next_node(accpeting_func_elipson(stk[0].start_node))
     
     return super_node
 
+ALL_NODES = []
 def gen_elipson_table(super_node):
-    '''ONE DFA TO RULE THEM ALL'''
-    all_nodes = []
-    all_nodes.append(super_node)
+    '''get an elipson nodes mapping for every node'''
+    logging.info('Started building elipson table')
+    ALL_NODES.append(super_node)
+    #TODO: change parameter name super_node
     def get_all_node(super_node):
-        for node in super_node.get_next_node(master_key=True):
-            if node not in all_nodes:
-                all_nodes.append(node)
-                return get_all_node(node)
+        # temp_list = list(filter(lambda x: x not in all_nodes, super_node.get_next_node(master_key=True)))
+        for nn in super_node.get_next_node(master_key=True):
+            if nn not in ALL_NODES:
+                ALL_NODES.append(nn)
+                return get_all_node(nn)
             else:
                 return
+    logging.info('started getting all nodes')
     get_all_node(super_node)
-    elipson_dict = []
-    node_temp = node()
-    elipson_dict[0] = accepting_func_char(node_temp,'c').__code__.co_code
-    elipson_dict[1] = accepting_func_range(node_temp, 0, 10).__code__.co_code
-    elipson_dict[2] = accpeting_func_elipson(node_temp).__code__.co_code
-
+    logging.info('finsihed getting all nodes')
     elipson_state_table = {}
-    def dfs_elipson_edges(starting_node_list, standing_node):
-        #use non locals
-        for edge in standing_node.next_node:
-            if edge.__code__.co_code == elipson_dict[2]:
-                if edge(master_key=True) not in starting_node_list:
-                    dfs_next_node = edge(master_key=True)
-                    starting_node_list.append(dfs_next_node)
-                    return dfs_elipson_edges(starting_node_list, dfs_next_node)
-            else: 
-                return
-
-    for node in all_nodes:
-        elipson_state_table[node] = list()
-        dfs_elipson_edges(elipson_state_table, node)
+    for cur_node in ALL_NODES:
+        elipson_state_table[cur_node] = list().append(cur_node)
+        dfs_elipson_edges(elipson_state_table, cur_node)
     return elipson_state_table
 
 def gen_great_dfa(start_super_node, elipson_dict):
     '''make lexical DFAs great again'''
     #every node check for all inputs from inputs_range
-    
+    sym_table = {}
+
+    for N in ALL_NODES:
+        cur_table = sym_table[N] = dict()
+        for n in elipson_dict.get(N):
+            for i in inputs_range:
+                #first we get list of nodes accepting current input i
+                next_nodes = n.get_next_node(i)
+                #we get elipson nodes for these nodes
+                elipson_next_nodes  = [ elipson_dict.get[j] for j in next_nodes]
+                #append them in the current symtable with row of node
+                cur_table[i].append(elipson_next_nodes)
+
     # get dict of all elipson moves
     #get all nodes:
     #DONE 
