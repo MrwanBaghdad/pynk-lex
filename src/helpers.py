@@ -1,5 +1,6 @@
 import logging
 from .graph_builder import *
+
 logging.basicConfig(level=logging.INFO)
 
 inputs_range = []
@@ -46,7 +47,8 @@ def accepting_func_range(next_node, range_start, range_end):
         this function represents the vertices between two node
     '''
     global inputs_range
-    inputs_range.append(('range', range_start, range_end))
+    inputs_range.extend([ chr(i) for i in range(ord(range_start), ord(range_end)+1)\
+    if chr(i) not in inputs_range])
     def accepting_output(testing_char=None, master_key=False):
         '''the higer order function with a master key flag
         to allow accesing final node for graph class
@@ -65,7 +67,8 @@ def accepting_func_char(next_node, accept_char):
         this function represents the vertices between two node
     '''
     global inputs_range
-    inputs_range.append(('char',accept_char))
+    if accept_char not in inputs_range:
+        inputs_range.append(accept_char)
     def accepting_output(testing_char=None, master_key=False):
         '''the higer order function with a master key flag
         to allow accesing final node for graph class
@@ -106,8 +109,8 @@ def to_postfix(str_in):
             try:
                 if op_stack.__len__() == 0:
                     op_stack.append(char)
-                elif precedence[op_stack[-1]] > precedence[char]:
-                    while precedence[op_stack[-1]] > precedence[char] or op_stack.__len__() > 0:
+                elif precedence[op_stack[-1]] >= precedence[char]:
+                    while precedence[op_stack[-1]] >= precedence[char] or op_stack.__len__() > 0:
                         temp = op_stack.pop()
                         postfix_stack.append(temp)
                     op_stack.append(char)
@@ -125,9 +128,28 @@ def to_postfix(str_in):
         postfix_stack.append(op_stack.pop())
     return ''.join(postfix_stack)
 
+elipson_code = accpeting_func_elipson(node()).__code__.co_code
+
+def dfs_elipson_edges(starting_node_list, standing_node):
+    '''
+    dfs recuservily; every traverse step we get  elipson edge
+    adding the node reached by given edge to dict with key as the starting node.
+    comparing edges using bytecode
+    '''
+    #use non locals
+    for edge in standing_node.next_node:
+        if edge.__code__.co_code == elipson_code:
+            #Found an elipson edge
+            dfs_next_node = edge(master_key=True)
+            if dfs_next_node not in starting_node_list:
+                starting_node_list.append(dfs_next_node)
+                dfs_elipson_edges(starting_node_list, dfs_next_node)
+
+
 if __name__ =='__main__':
     #FIXME: this case
-    print(to_postfix('(a-b).(0-9)'))
+    print(to_postfix('a-z.(0-9)'))
+    print(to_postfix('((0-9)(a-z))*'))
     f1 =  accepting_func_char(node(), 'c')
     assert f1.__code__.co_code == accepting_func_char(node(),'d').__code__.co_code
     print(accpeting_func_elipson(node()).__code__.co_code)
