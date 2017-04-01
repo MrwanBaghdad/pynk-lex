@@ -21,10 +21,15 @@ class preproc():
                 logging.debug('added in sym table '+temp[0]+ ' '+sym_table[temp[0]])
         logging.info('started translation')
         for line in lex_lines: #pylint: disable=E1133
+            # line = line[0:-1]
             out.append(helpers.replace_all(line,sym_table))
         logging.info(out)
         logging.info('ended translation')
-        return out  
+
+        return out 
 
 if (__name__ == "__main__"):
-    preproc.transfrom(['x = [A | Z]','y =[3-12]', 'z: x + y'])
+    import os
+    print(os.getcwd())
+    x =preproc.transfrom(open('src/preproc_input.txt','r').readlines())
+    open('src/preprox_out.txt', 'w+').writelines(x)
