@@ -1,6 +1,6 @@
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 class node():
     def __init__(self, final_state=False):
         '''
