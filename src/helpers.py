@@ -106,6 +106,8 @@ def to_postfix(str_in):
         if char == '-':
             logging.info('found -')
             op_stack.append(char)
+        elif char.isspace():
+            continue
         elif char in ['[', ']']:
             pass
         elif char in ['+', '*', '|', '.', '(']:
