@@ -1,5 +1,5 @@
-#TODO: read from lexical rule and make NFA
-#TODO: add logging
+
+
 import logging
 import os
 
@@ -8,9 +8,11 @@ from .graph_mani import *
 from .helpers import *
 from .preproc import preproc
 import re
+from .state_class import create_new_state
 
 logging.basicConfig(level=logging.DEBUG)
 def gen_great_NFA(in_lines):
+    logging.debug('Content of inputs range at GEN NFA STAR')
     '''generate one NFA for whole lang'''
     input_lines = in_lines
     logging.info('Started generating NFA')
@@ -19,11 +21,11 @@ def gen_great_NFA(in_lines):
     super_node = node()
     for all_line in input_lines:
         if re.search(r'=',all_line) is not None:
-            logging.debug('found definition'+re.search(r'=', all_line).expand())
+            logging.debug('found definition')
             continue
-
-        line_pstfx = line = all_line.split(':')[1].strip()
-        logging.debug('working on postfix '+line_pstfx)
+        line = all_line.split(':')[1].strip()
+        line_pstfx = to_postfix(line)
+        logging.info('working on postfix '+line_pstfx)
         stk = []
         for char in line_pstfx:
             logging.debug('cur char in postfix '+char)
@@ -34,9 +36,11 @@ def gen_great_NFA(in_lines):
             elif char in ['.', '+', '*', '|', '-']:
                 if char == '.':
                     logging.info('preforming and on two graphs')
+                    logging.debug(inputs_range)
                     c2 = stk.pop()
                     c1 = stk.pop()
                     stk.append(anding_two_graphs(c1, c2))
+                    logging.debug(inputs_range)
 
                 elif char in ['*','+']:
                     if(char == '*'):
@@ -65,7 +69,7 @@ def gen_great_NFA(in_lines):
             else:
                 stk.append(char)
         '''one NFA Stack in stk push to NFA stack'''
-        if stk.__len__() !=1  or type(stk[0]) != graph:
+        if stk.__len__() ==1  and type(stk[0]) != graph:
             logging.error('regex parsed more than one nfa ')
             raise RuntimeError
         logging.debug('all_line: '+all_line)
@@ -76,12 +80,14 @@ def gen_great_NFA(in_lines):
     return super_node
 
 ALL_NODES = []
+
 def gen_elipson_table(super_node):
     '''get an elipson nodes mapping for every node'''
     logging.info('Started building elipson table')
     ALL_NODES.append(super_node)
-    #TODO: change parameter name super_node
+
     def get_all_node(super_node):
+
         # temp_list = list(filter(lambda x: x not in all_nodes, super_node.get_next_node(master_key=True)))
         for nn in super_node.get_next_node(master_key=True):
             if nn not in ALL_NODES:
@@ -105,15 +111,28 @@ def gen_great_dfa(start_super_node, elipson_dict):
     sym_table = {}
 
     for N in ALL_NODES:
-        cur_table = sym_table[N] = dict()
-        for n in elipson_dict.get(N):
-            for i in inputs_range:
+        cur_table = sym_table[create_new_state(elipson_dict[N])] = dict()
+        for i in inputs_range:
+            cur_table[i] = list()
+            logging.info('finding states for input '+i)
+            for n in elipson_dict.get(N):
                 #first we get list of nodes accepting current input i
                 next_nodes = n.get_next_node(i)
                 #we get elipson nodes for these nodes
-                elipson_next_nodes  = [ elipson_dict.get[j] for j in next_nodes]
+                logging.debug("next_nodes")
+                logging.debug(next_nodes)
+                # elipson_next_nodes  = [ elipson_dict.get(j) for j in next_nodes]
+                elipson_next_nodes = list()
+                try:
+                    for j in next_nodes:
+                         cur_table[i].extend(elipson_dict.get(j)) 
+                except TypeError as err:
+                    pass
+
                 #append them in the current symtable with row of node
-                cur_table[i].append(elipson_next_nodes)
+            cur_table[i] = create_new_state(cur_table[i])
+    return sym_table
+
 
     # get dict of all elipson moves
     #get all nodes:
