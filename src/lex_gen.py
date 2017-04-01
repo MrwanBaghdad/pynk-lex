@@ -20,10 +20,14 @@ def gen_great_NFA(in_lines):
     literal_flag = False
     super_node = node()
     for all_line in input_lines:
+        logging.info(all_line)
         if re.search(r'=',all_line) is not None:
             logging.debug('found definition')
             continue
-        line = all_line.split(':')[1].strip()
+        try:
+            line = all_line.split(':')[1].strip()
+        except IndexError as err:
+            return
         line_pstfx = to_postfix(line)
         logging.info('working on postfix '+line_pstfx)
         stk = []
@@ -86,11 +90,12 @@ def gen_elipson_table(super_node):
     logging.info('Started building elipson table')
     ALL_NODES.append(super_node)
 
-    def get_all_node(super_node):
+    def get_all_node(super_node_in):
 
         # temp_list = list(filter(lambda x: x not in all_nodes, super_node.get_next_node(master_key=True)))
-        for nn in super_node.get_next_node(master_key=True):
-            if nn not in ALL_NODES:
+        logging.debug(super_node_in)
+        for nn in super_node_in.get_next_node(master_key=True):
+            if nn not in ALL_NODES and nn is not None:
                 ALL_NODES.append(nn)
                 return get_all_node(nn)
             else:
