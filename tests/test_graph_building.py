@@ -1,10 +1,12 @@
-from .context import src
-import src.graph_mani as graph_mani
-import src.graph_builder as graph_builder
-import src.helpers as helpers
+
+from .context import src #pylint: disable=E
+import src.graph_mani as graph_mani #pylint: disable=E
+import src.graph_builder as graph_builder #pylint: disable=E
+import src.helpers as helpers #pylint: disable=E
 import unittest
 
-class testing_opaa(unittest.TestCase):
+
+class TestingGraph(unittest.TestCase):
     def test_create_node(self):
         n1 = graph_builder.node()
         n2 = graph_builder.node()
@@ -44,7 +46,7 @@ class testing_opaa(unittest.TestCase):
         n1.add_next_node(helpers.accepting_func_char(n12,'d'))
         n1.add_next_node(helpers.accpeting_func_elipson(n13))
 
-        unittest.TestCase.assertIn(self, n12,n1.get_next_node('d'))
+        unittest.TestCase.assertIn(self, n12, n1.get_next_node('d'))
         unittest.TestCase.assertIn(self, n11, n1.get_next_node('d'))
 
         withA = n1.get_next_node('a')

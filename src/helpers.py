@@ -1,7 +1,7 @@
 import logging
 from .graph_builder import *
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 inputs_range = []
 
@@ -14,7 +14,7 @@ def replace_all(str_in,rep_dict):
     logging.info('finished replaceing string')
     return temp
 
-def change_to_graphs(inp1,inp2=None):
+def change_to_graphs(inp1, inp2=None):
     '''
     if inputs are char make a simple NFA from them and pass them for
     the operation handling functions as tuples,
@@ -35,8 +35,8 @@ def change_to_graphs(inp1,inp2=None):
         graph2 = inp2
     else:
         start_node = node()
-        start_node.add_next_node(accepting_func_char(node, inp2))
-        graph2 = inp2
+        start_node.add_next_node(accepting_func_char(node(), inp2))
+        graph2 = graph(start_node)
 
     logging.info('finished changing to graphs')
     return (graph1, graph2)
@@ -99,36 +99,50 @@ def to_postfix(str_in):
     precedence['*'] = 2
     precedence['|'] = 1
     precedence['.'] = 1
-    precedence['('] = 0
+    precedence['('] = 1.5
     for char in str_in:
+        logging.debug('current char'+char)
+   
         if char == '-':
+            logging.info('found -')
             op_stack.append(char)
         elif char in ['[', ']']:
             pass
         elif char in ['+', '*', '|', '.', '(']:
             try:
-                if op_stack.__len__() == 0:
-                    op_stack.append(char)
-                elif precedence[op_stack[-1]] >= precedence[char]:
-                    while precedence[op_stack[-1]] >= precedence[char] or op_stack.__len__() > 0:
+                # if op_stack.__len__() == 0:
+                #     op_stack.append(char)
+                
+                if precedence[op_stack[-1]] >= precedence[char]:
+                    while op_stack.__len__() > 0 and precedence[op_stack[-1]] >= precedence[char] :
                         temp = op_stack.pop()
-                        postfix_stack.append(temp)
-                    op_stack.append(char)
+                        postfix_stack.append(temp) if temp !='(' else None
+                logging.debug("APPENDING "+char)
             except (IndexError, AttributeError, ValueError) as err:
                 logging.error(err)
-        elif char == ')':
-            temp = op_stack.pop()
-            while temp != '(' and op_stack.__len__() > 0:
-                postfix_stack.append(temp)
+            op_stack.append(char)
+        # elif char == ')' and op_stack.__len__()>0:
+        #     temp = op_stack.pop()
+        #     postfix_stack.append(temp)
+            # while temp != '(' and op_stack.__len__() > 0:
+                # temp = postfix_stack.pop()
+                # postfix_stack.append(temp)
+        elif char ==')':
+            while op_stack.__len__()>0:
                 temp = op_stack.pop()
+                if temp =='(':
+                    break
+                else:
+                    postfix_stack.append(temp)
         else:
             postfix_stack.append(char)
-
+        logging.debug(op_stack)
+        logging.debug(postfix_stack)
     while op_stack.__len__() > 0:
         postfix_stack.append(op_stack.pop())
     return ''.join(postfix_stack)
 
-elipson_code = accpeting_func_elipson(node()).__code__.co_code
+elipson_code = accpeting_func_elipson(node()).__code__.co_code #pylint: disable=E
 
 def dfs_elipson_edges(starting_node_list, standing_node):
     '''
@@ -148,8 +162,11 @@ def dfs_elipson_edges(starting_node_list, standing_node):
 
 if __name__ =='__main__':
     #FIXME: this case
-    print(to_postfix('a-z.(0-9)'))
-    print(to_postfix('((0-9)(a-z))*'))
-    f1 =  accepting_func_char(node(), 'c')
-    assert f1.__code__.co_code == accepting_func_char(node(),'d').__code__.co_code
+    
+    assert to_postfix('a-z.(0-9)') ==  'az-09-.'
+    # print(to_postfix('((0-9)|(a-z))*'))
+    assert to_postfix('((0-9)|(a-z))*') == "09-az-|*"
+    
+    # f1 =  accepting_func_char(node(), 'c')
+    # assert f1.__code__.co_code == accepting_func_char(node(),'d').__code__.co_code
     print(accpeting_func_elipson(node()).__code__.co_code)

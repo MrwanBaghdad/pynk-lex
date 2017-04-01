@@ -90,3 +90,5 @@ ENV/
 
 # My notes
 notes*.txt
+
+*.backup
