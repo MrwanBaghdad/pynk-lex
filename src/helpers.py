@@ -142,7 +142,7 @@ def to_postfix(str_in):
         postfix_stack.append(op_stack.pop())
     return ''.join(postfix_stack)
 
-elipson_code = accpeting_func_elipson(node()).__code__.co_code
+elipson_code = accpeting_func_elipson(node()).__code__.co_code #pylint: disable=E
 
 def dfs_elipson_edges(starting_node_list, standing_node):
     '''
