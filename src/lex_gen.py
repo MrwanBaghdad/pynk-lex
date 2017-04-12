@@ -115,27 +115,62 @@ def gen_great_dfa(start_super_node, elipson_dict):
     #every node check for all inputs from inputs_range
     sym_table = {}
 
-    for N in ALL_NODES:
-        cur_table = sym_table[create_new_state(elipson_dict[N])] = dict()
-        for i in inputs_range:
-            cur_table[i] = list()
-            logging.info('finding states for input '+i)
-            for n in elipson_dict.get(N):
-                #first we get list of nodes accepting current input i
-                next_nodes = n.get_next_node(i)
-                #we get elipson nodes for these nodes
-                logging.debug("next_nodes")
-                logging.debug(next_nodes)
-                # elipson_next_nodes  = [ elipson_dict.get(j) for j in next_nodes]
-                elipson_next_nodes = list()
-                try:
-                    for j in next_nodes:
-                         cur_table[i].extend(elipson_dict.get(j)) 
-                except TypeError as err:
-                    pass
+    # for N in ALL_NODES:
+    #     cur_table = sym_table[create_new_state(elipson_dict[N])] = dict()
+    #     for i in inputs_range:
+    #         cur_table[i] = list()
+    #         logging.info('finding states for input '+i)
+    #         for n in elipson_dict.get(N):
+    #             #first we get list of nodes accepting current input i
+    #             next_nodes = n.get_next_node(i)
+    #             #we get elipson nodes for these nodes
+    #             logging.debug("next_nodes")
+    #             logging.debug(next_nodes)
+    #             # elipson_next_nodes  = [ elipson_dict.get(j) for j in next_nodes]
+    #             elipson_next_nodes = list()
+    #             try:
+    #                 for j in next_nodes:
+    #                      cur_table[i].extend(elipson_dict.get(j)) 
+    #             except TypeError as err:
+    #                 pass
 
-                #append them in the current symtable with row of node
-            cur_table[i] = create_new_state(cur_table[i])
+    #             #append them in the current symtable with row of node
+    #         cur_table[i] = create_new_state(cur_table[i])
+
+    #starting from starting node x:
+    states = list()
+    # def get_state_for_input(state_in, input_i):
+    #     next_nodes = []
+    #     for node in state_in:
+    #         l = node.get_next_node(input_i)
+    #         next_nodes.extend(l)
+    #     for node in next_nodes:
+    #         next_nodes.extend(elipson_dict.get(node))
+        
+    #     return create_new_state(next_nodes)
+    
+    start_state = create_new_state( elipson_dict.get(start_super_node))
+    states.append(start_state)
+    for s in states:
+        #group the state with all elipson states
+        logging.info('start calc for state ')
+        logging.info(s)
+        dict_for_state = sym_table[s] = dict()
+        for i in inputs_range:
+            logging.info('for input '+ i)
+            prestate_list_next_nodes = list()
+            for n in s.get_nodes():
+                l_n = n.get_next_node(i)
+                # map(lambda x: prestate_list_next_nodes.extend(elipson_dict.get(x)), l_n)
+                logging.debug(l_n)
+                for nn in l_n:
+                    if nn is not None:
+                        prestate_list_next_nodes.extend(elipson_dict.get(nn))
+            s_state = create_new_state(prestate_list_next_nodes)
+            dict_for_state[i] = s_state
+            if s_state not in states:
+                states.append(s_state)
+
     return sym_table
 
 
