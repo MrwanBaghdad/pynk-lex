@@ -95,9 +95,9 @@ def gen_elipson_table(super_node):
         # temp_list = list(filter(lambda x: x not in all_nodes, super_node.get_next_node(master_key=True)))
         logging.debug(super_node_in)
         for nn in super_node_in.get_next_node(master_key=True):
-            if nn not in ALL_NODES and nn is not None:
+            if nn not in ALL_NODES :#and nn is not None:
                 ALL_NODES.append(nn)
-                return get_all_node(nn)
+                get_all_node(nn)
             else:
                 return
     logging.info('started getting all nodes')
